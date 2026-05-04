@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MMA Open 2026 | Resultados Elite</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070a;
+      --card-bg: rgba(20, 25, 35, 0.95);
+      --mma-gold: #f59e0b;
+      --asturias-blue: #2563eb;
+      --win: #10b981;
+      --loss: #ef4444;
+      --text: #ffffff;
+      --text-dim: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #05070a 100%);
+    }
+
+    header {
+      padding: 3rem 1rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-weight: 900;
+      font-size: 2.5rem;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      margin: 0;
+      color: var(--mma-gold);
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 30px;
+      max-width: 1400px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Medal Summary Styles */
+    .medal-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 15px 0 25px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .summary-box span {
+      display: block;
+    }
+
+    .summary-val {
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .summary-lbl {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* Filter Elements */
+    .filters h3,
+    .glass-card h3 {
+      margin-top: 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    .filters input,
+    .filters select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #000;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: white;
+    }
+
+    /* Match Content */
+    .section-title {
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+    }
+
+    .match-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 15px;
+      display: grid;
+      grid-template-columns: 1.2fr 140px 1.2fr 1.2fr 100px;
+      align-items: center;
+      border: 1px solid var(--border);
+      transition: 0.2s;
+    }
+
+    .match-card:hover {
+      border-color: var(--mma-gold);
+      transform: translateY(-2px);
+    }
+
+    .match-card.win {
+      border-left: 4px solid var(--win);
+    }
+
+    .score-box {
+      background: #000;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      margin-right: 5px;
+    }
+
+    .score-nums {
+      font-weight: 900;
+      font-size: 1.5rem;
+      font-family: monospace;
+    }
+
+    .btn-watch {
+      background: var(--text);
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .btn-watch:hover {
+      background: var(--mma-gold);
+    }
+
+    .medal-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    @media (max-width: 1000px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .match-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 15px;
+      }
+
+      .score-box {
+        margin-right: 0;
+      }
+
+      #card-filters {
+        order: 2;
+      }
+
+      #card-medals {
+        order: 1;
+      }
+    }
+
+    .video-wrapper {
+      position: sticky;
+      top: 15px;
+      z-index: 1000;
+      margin-bottom: 25px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>MMA OPEN <span style="color:white; opacity:0.8">CHAMPIONSHIP</span></h1>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <!-- Medallero Section -->
+      <div class="glass-card" id="card-medals">
+        <h3>MEDALLERO</h3>
+        <div class="medal-summary">
+          <div class="summary-box"><span class="summary-val" style="color:#facc15" id="sum-oro">0</span><span
+              class="summary-lbl">Oros</span></div>
+          <div class="summary-box"><span class="summary-val" style="color:#cbd5e1" id="sum-plata">0</span><span
+              class="summary-lbl">Platas</span></div>
+          <div class="summary-box"><span class="summary-val" style="color:#d97706" id="sum-bronce">0</span><span
+              class="summary-lbl">Bronces</span></div>
+        </div>
+        <div id="medalList"></div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="glass-card filters" id="card-filters">
+        <h3>FILTROS</h3>
+        <input type="text" id="searchName" placeholder="Buscar por nombre...">
+        <select id="filterCategory">
+          <option value="">Género: Todos</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
+        </select>
+        <select id="filterTeam">
+          <option value="">Club: Todos</option>
+        </select>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="video-wrapper" id="videoWrapper">
+        <div style="aspect-ratio: 16/9; background:#000; border-radius: 20px 20px 0 0; overflow:hidden">
+          <iframe id="ytPlayer" width="100%" height="100%" src="" frameborder="0" allow="autoplay; encrypted-media"
+            allowfullscreen></iframe>
+        </div>
+        <button onclick="closeVideo()"
+          style="width:100%; padding:15px; background:var(--loss); color:white; border:none; border-radius: 0 0 20px 20px; font-weight:900; cursor:pointer">CERRAR
+          REPRODUCTOR</button>
+      </div>
+
+      <h2 class="section-title">COMBATES <span id="matchCounter"
+          style="font-size:0.8rem; background:var(--asturias-blue); padding:4px 12px; border-radius:50px">0</span></h2>
+      <div id="matchList"></div>
+    </main>
+  </div>
+
+  <script>
+    let allMatches = [];
+    let allMedals = [];
+
+    const toSec = (hms) => {
+      const a = hms.split(':');
+      return a.length === 3 ? (+a[0]) * 3600 + (+a[1]) * 60 + (+a[2]) : 0;
+    };
+
+    const getStageLabel = (code) => {
+      if (code.includes('R')) return `Ronda ${code.replace('R', '')}`;
+      const map = {"1": "Final", "2": "Semi", "4": "Cuartos", "3-5": "Bronce"};
+      return map[code] || "Combate";
+    };
+
+    async function init() {
+      // Fetch Fights
+      Papa.parse("fights.csv", {
+        download: true, header: true, skipEmptyLines: true,
+        complete: (results) => {
+          // Alphabetical sort by Name
+          allMatches = results.data.sort((a, b) => a.Name.localeCompare(b.Name));
+          populateFilters();
+          renderFights(allMatches);
+        }
+      });
+
+      // Fetch Medals
+      Papa.parse("medals.csv", {
+        download: true, header: true, skipEmptyLines: true,
+        complete: (results) => {
+          allMedals = results.data;
+          renderMedals();
+        }
+      });
+    }
+
+    function renderMedals() {
+      const list = document.getElementById('medalList');
+      const summary = {"Oro": 0, "Plata": 0, "Bronce": 0};
+      const rank = {"Oro": 1, "Plata": 2, "Bronce": 3};
+      const emojis = {"Oro": "🥇", "Plata": "🥈", "Bronce": "🥉"};
+
+      // Sort: First by Rank (Oro > Plata > Bronce), then by Name
+      allMedals.sort((a, b) => rank[a.Medal] - rank[b.Medal] || a.Name.localeCompare(b.Name));
+
+      list.innerHTML = '';
+      allMedals.forEach(m => {
+        if (summary.hasOwnProperty(m.Medal)) summary[m.Medal]++;
+        list.innerHTML += `
+                <div class="medal-row">
+                    <span style="font-size:1.5rem">${emojis[m.Medal] || '🏅'}</span>
+                    <div>
+                        <div style="font-weight:700">${m.Name}</div>
+          <div style="font-size:0.7rem; color:var(--text-dim)">${m.Weight}kg • ${m.Age} • ${m.Category} • ${m.Team}</div>
+                    </div>
+                </div>`;
+      });
+
+      document.getElementById('sum-oro').innerText = summary.Oro;
+      document.getElementById('sum-plata').innerText = summary.Plata;
+      document.getElementById('sum-bronce').innerText = summary.Bronce;
+    }
+
+    function renderFights(data) {
+      const container = document.getElementById('matchList');
+      container.innerHTML = '';
+      document.getElementById('matchCounter').innerText = data.length;
+
+      data.forEach(m => {
+        const isRed = m.Color.toUpperCase().includes('R');
+        const isWin = m.Result.toUpperCase() === 'W';
+        const s = m.Score.split('-');
+        const s1 = isRed ? s[1] : s[0];
+        const s2 = isRed ? s[0] : s[1];
+
+        container.innerHTML += `
+                <div class="match-card ${isWin ? 'win' : ''}">
+                    <div>
+                        <div style="font-weight:800; font-size:1.1rem">${m.Name}</div>
+                        <div style="font-size:0.75rem; color:var(--asturias-blue)">${m.Team}</div>
+                    </div>
+                    <div class="score-box">
+                        <div class="score-nums">
+                            <span style="color:${isRed ? 'var(--loss)' : 'var(--asturias-blue)'}">${s1}</span>:<span style="color:${!isRed ? 'var(--loss)' : 'var(--asturias-blue)'}">${s2}</span>
+                        </div>
+                        <div style="font-size:0.55rem; text-transform:uppercase; margin-top:4px; opacity:0.6">Jaula ${m.Mat}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight:800; font-size:1.1rem">${m.Opponent}</div>
+                        <div style="font-size:0.75rem; color:var(--text-dim)">${m.Team_O}</div>
+                    </div>
+                    <div style="font-size:0.75rem">
+                        <span style="background:#1e293b; padding:2px 6px; border-radius:4px; font-weight:bold">${getStageLabel(m.Match)}</span><br>
+                        <span style="color:var(--mma-gold); font-weight:bold">${m.Method}</span><br>
+                        ${m.Weight}kg • ${m.Age}
+                    </div>
+                    <button class="btn-watch" onclick="play('${m.URL}', '${m.Start}', '${m.End}')">Video</button>
+                </div>`;
+      });
+    }
+
+    function play(url, start, end) {
+      const id = url.split('v=')[1]?.split('&')[0];
+      document.getElementById('ytPlayer').src = `https://www.youtube.com/embed/${id}?start=${toSec(start)}&end=${toSec(end)}&autoplay=1`;
+      const wrapper = document.getElementById('videoWrapper');
+      wrapper.style.display = 'block';
+      wrapper.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+
+    function closeVideo() {document.getElementById('videoWrapper').style.display = 'none'; document.getElementById('ytPlayer').src = "";}
+
+    function populateFilters() {
+      const teams = [...new Set(allMatches.map(m => m.Team))].filter(Boolean).sort();
+      teams.forEach(i => document.getElementById('filterTeam').innerHTML += `<option value="${i}">${i}</option>`);
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchName').value.toLowerCase();
+      const cat = document.getElementById('filterCategory').value;
+      const team = document.getElementById('filterTeam').value;
+
+      const filtered = allMatches.filter(m =>
+        (m.Name.toLowerCase().includes(q) || m.Opponent.toLowerCase().includes(q)) &&
+        (!cat || m.Category === cat) &&
+        (!team || m.Team === team)
+      );
+      renderFights(filtered);
+    }
+
+    document.querySelectorAll('.filters input, .filters select').forEach(el => el.addEventListener('input', applyFilters));
+    window.onload = init;
+  </script>
+</body>
+
+</html>
